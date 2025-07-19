@@ -1,7 +1,6 @@
-const Message = require('../models/Message');
-import { getReply } from '../services/aiService';
-
 import { Request, Response } from 'express';
+import { getReply } from '../services/aiService';
+import Message from '../models/Message';
 
 async function handleWebhook(req: Request, res: Response) {
   if (req.body.object === 'page') {
@@ -38,4 +37,4 @@ async function handleWebhook(req: Request, res: Response) {
   }
 }
 
-module.exports = { handleWebhook };
+export { handleWebhook };
