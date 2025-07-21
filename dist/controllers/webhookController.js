@@ -31,22 +31,18 @@ function handleWebhook(req, res) {
                 const senderId = webhookEvent.sender.id;
                 const pageId = entry.id;
                 const messageText = webhookEvent.message.text;
-                // ✅ Save user message to DB
                 yield Message_1.default.create({
                     pageId,
                     senderId,
                     message: messageText,
                     timestamp: Date.now(),
                 });
-                // 🔄 Fetch page settings (accessToken + systemPrompt etc)
                 const page = yield PageSettings_1.default.findOne({ pageId });
                 if (!page || !page.accessToken) {
                     console.error(`⚠️ No PageSettings found for pageId: ${pageId}`);
                     continue;
                 }
-                // 💬 Generate AI reply based on that page
                 const reply = yield (0, aiService_1.getReply)(messageText, pageId);
-                // 📤 Send the reply back to the user via Messenger API
                 yield fetch(`https://graph.facebook.com/v19.0/me/messages?access_token=${page.accessToken}`, {
                     method: 'POST',
                     headers: {
