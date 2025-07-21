@@ -1,26 +1,16 @@
 import { OpenAI } from 'openai';
-import Products from '../models/Products';
+import PageSettings from '../models/PageSettings';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Fetch product info from MongoDB
-async function fetchProductContext(): Promise<string> {
-  const products = await Products.find({});
-  if (!products || products.length === 0) return 'Одоогоор бараа олдсонгүй.';
-
-  return products.map((p:any) => 
-    `Нэр: ${p.name}, Үнэ: ${p.price}₮, Үлдэгдэл: ${p.stock}`
-  ).join('\n');
-}
-
-export async function getReply(text: string): Promise<string> {
-  const productContext = await fetchProductContext();
+export async function getReply(text: string, pageId: string): Promise<string> {
+  const settings = await PageSettings.findOne({ pageId });
+  const prompt = settings?.systemPrompt || 'You are a friendly Mongolian AI assistant helping customers.';
 
   const response = await openai.chat.completions.create({
     model: 'gpt-4o',
     messages: [
-      { role: 'system', content: `Чи Монгол хэрэглэгчдэд тусалдаг эелдэг чатбот. Дараах бараануудын мэдээллийг хэрэглэгчид танилцуулж, асуултад нь бараа болон үлдэгдэл дээр үндэслэн хариу өг: \n${productContext}` },
-      {role: 'system', content: 'you can answer question about products have or not but you cannot answer how much it remained'},
+      { role: 'system', content: prompt },
       { role: 'user', content: text }
     ],
     temperature: 0.7,
