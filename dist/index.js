@@ -1,11 +1,21 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const webhookController_1 = require("./controllers/webhookController");
+const cors_1 = __importDefault(require("cors"));
 const connectPageController_1 = require("./controllers/connectPageController");
 const app = express();
+const allowOrigins = ['https://chuuai-frontend.vercel.app'];
+app.use((0, cors_1.default)({
+    origin: allowOrigins,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    credentials: true,
+}));
 app.use(express.json());
 // MongoDB Connect
 mongoose.connect(process.env.MONGO_URI)

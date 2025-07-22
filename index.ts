@@ -1,12 +1,17 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-import { connect } from 'http2';
 import { handleWebhook } from './controllers/webhookController';
 import { Request, Response } from 'express';
+import cors from 'cors';
 import { connectPage } from './controllers/connectPageController';
 
 const app = express();
+const allowOrigins = ['https://chuuai-frontend.vercel.app'];
+app.use(cors({
+  origin: allowOrigins, 
+  methods: ['GET', 'POST', 'OPTIONS'],
+  credentials: true,}))
 app.use(express.json());
 
 // MongoDB Connect
