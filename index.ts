@@ -1,8 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
+import { connect } from 'http2';
 import { handleWebhook } from './controllers/webhookController';
 import { Request, Response } from 'express';
+import { connectPage } from './controllers/connectPageController';
 
 const app = express();
 app.use(express.json());
@@ -28,6 +30,8 @@ app.get('/webhook', (req: Request, res: Response) => {
 
 // Webhook Handler
 app.post('/webhook', handleWebhook);
+
+app.post('/api/connect-page', connectPage);
 
 app.get('/privacy-policy', (req:Request, res:Response) => {
   res.send(`

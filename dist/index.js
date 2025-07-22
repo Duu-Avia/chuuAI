@@ -4,6 +4,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const webhookController_1 = require("./controllers/webhookController");
+const connectPageController_1 = require("./controllers/connectPageController");
 const app = express();
 app.use(express.json());
 // MongoDB Connect
@@ -24,6 +25,7 @@ app.get('/webhook', (req, res) => {
 });
 // Webhook Handler
 app.post('/webhook', webhookController_1.handleWebhook);
+app.post('/api/connect-page', connectPageController_1.connectPage);
 app.get('/privacy-policy', (req, res) => {
     res.send(`
     <h1>Privacy Policy</h1>
