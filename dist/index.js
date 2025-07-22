@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const { handleWebhook } = require('./controllers/webhookController');
+const webhookController_1 = require("./controllers/webhookController");
 const app = express();
 app.use(express.json());
 // MongoDB Connect
@@ -23,7 +23,25 @@ app.get('/webhook', (req, res) => {
     }
 });
 // Webhook Handler
-app.post('/webhook', handleWebhook);
+app.post('/webhook', webhookController_1.handleWebhook);
+app.get('/privacy-policy', (req, res) => {
+    res.send(`
+    <h1>Privacy Policy</h1>
+    <p>We respect your privacy. ChuuAI does not collect personal data. Messages are only used to generate AI responses and are not shared.</p>
+  `);
+});
+app.get('/terms', (req, res) => {
+    res.send(`
+    <h1>Terms of Service</h1>
+    <p>By using ChuuAI, you agree to receive automated replies. We are not liable for generated content. Use at your own discretion.</p>
+  `);
+});
+app.get('/delete-data', (req, res) => {
+    res.send(`
+    <h1>Data Deletion Instructions</h1>
+    <p>If you wish to delete your data, please email us at duuavia01@gmail.com with your Facebook Page ID.</p>
+  `);
+});
 // Start Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
