@@ -33,6 +33,12 @@ app.get('/webhook', (req: Request, res: Response) => {
   }
 });
 
+app.post('/webhook', (req: Request, res: Response, next: import('express').NextFunction) => {
+  console.log('🚨 /webhook POST hit!');
+  next(); // call next handler (handleWebhook)
+});
+
+
 // Webhook Handler
 app.post('/webhook', handleWebhook);
 

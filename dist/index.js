@@ -33,6 +33,10 @@ app.get('/webhook', (req, res) => {
         res.sendStatus(403);
     }
 });
+app.post('/webhook', (req, res, next) => {
+    console.log('🚨 /webhook POST hit!');
+    next(); // call next handler (handleWebhook)
+});
 // Webhook Handler
 app.post('/webhook', webhookController_1.handleWebhook);
 app.post('/api/connect-page', connectPageController_1.connectPage);
