@@ -7,18 +7,26 @@ export async function handleWebhook(req: Request, res: Response) {
   try {
     const body = req.body;
 
+    console.log('📥 Webhook received:', JSON.stringify(body, null, 2));
+
     if (body.object !== 'page') {
+      console.log('❌ Not a page event:', body.object);
       return res.sendStatus(404);
     }
 
     for (const entry of body.entry) {
       const pageId = entry.id;
+      console.log('📄 Page ID:', pageId);
 
       // ✅ Handle normal messages
       const messagingEvent = entry.messaging?.[0];
       if (messagingEvent?.message?.text) {
         const senderId = messagingEvent.sender.id;
         const messageText = messagingEvent.message.text;
+
+        console.log('✉️ Incoming message');
+        console.log('👤 Sender ID:', senderId);
+        console.log('💬 Message Text:', messageText);
 
         await Message.create({
           pageId,
@@ -34,8 +42,9 @@ export async function handleWebhook(req: Request, res: Response) {
         }
 
         const reply = await getReply(messageText, pageId);
+        console.log('🤖 Generated Reply:', reply);
 
-        await fetch(`https://graph.facebook.com/v19.0/me/messages?access_token=${page.accessToken}`, {
+        const fbRes = await fetch(`https://graph.facebook.com/v19.0/me/messages?access_token=${page.accessToken}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -45,6 +54,9 @@ export async function handleWebhook(req: Request, res: Response) {
             message: { text: reply }
           })
         });
+
+        const fbJson = await fbRes.json();
+        console.log('📬 Facebook Response:', fbJson);
       }
 
       // ✅ Handle comment replies (from feed changes)
@@ -58,13 +70,17 @@ export async function handleWebhook(req: Request, res: Response) {
             const commentId = value.comment_id;
 
             console.log('📝 New comment:', commentMessage);
+            console.log('💬 From user:', commenterId);
 
             const triggerWords = ['medeelel', 'une', 'awii', 'info'];
             const isInterested = triggerWords.some(word =>
               commentMessage?.toLowerCase().includes(word)
             );
 
-            if (!isInterested || !commentMessage || !commenterId) continue;
+            if (!isInterested || !commentMessage || !commenterId) {
+              console.log('🚫 Ignored comment');
+              continue;
+            }
 
             const page = await PageSettings.findOne({ pageId });
             if (!page || !page.accessToken) {
@@ -73,9 +89,9 @@ export async function handleWebhook(req: Request, res: Response) {
             }
 
             const reply = await getReply(commentMessage, pageId);
+            console.log('🤖 Reply to comment:', reply);
 
-            // ✅ Use fetch for private reply to comment
-            await fetch(`https://graph.facebook.com/v19.0/${commentId}/private_replies?access_token=${page.accessToken}`, {
+            const commentRes = await fetch(`https://graph.facebook.com/v19.0/${commentId}/private_replies?access_token=${page.accessToken}`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'
@@ -85,7 +101,8 @@ export async function handleWebhook(req: Request, res: Response) {
               })
             });
 
-            console.log(`📩 Auto-DM sent to commenter: ${commenterId}`);
+            const commentJson = await commentRes.json();
+            console.log('📩 Comment Reply Response:', commentJson);
           }
         }
       }

@@ -21,16 +21,22 @@ function handleWebhook(req, res) {
         var _a, _b, _c;
         try {
             const body = req.body;
+            console.log('📥 Webhook received:', JSON.stringify(body, null, 2));
             if (body.object !== 'page') {
+                console.log('❌ Not a page event:', body.object);
                 return res.sendStatus(404);
             }
             for (const entry of body.entry) {
                 const pageId = entry.id;
+                console.log('📄 Page ID:', pageId);
                 // ✅ Handle normal messages
                 const messagingEvent = (_a = entry.messaging) === null || _a === void 0 ? void 0 : _a[0];
                 if ((_b = messagingEvent === null || messagingEvent === void 0 ? void 0 : messagingEvent.message) === null || _b === void 0 ? void 0 : _b.text) {
                     const senderId = messagingEvent.sender.id;
                     const messageText = messagingEvent.message.text;
+                    console.log('✉️ Incoming message');
+                    console.log('👤 Sender ID:', senderId);
+                    console.log('💬 Message Text:', messageText);
                     yield Message_1.default.create({
                         pageId,
                         senderId,
@@ -43,7 +49,8 @@ function handleWebhook(req, res) {
                         continue;
                     }
                     const reply = yield (0, aiService_1.getReply)(messageText, pageId);
-                    yield fetch(`https://graph.facebook.com/v19.0/me/messages?access_token=${page.accessToken}`, {
+                    console.log('🤖 Generated Reply:', reply);
+                    const fbRes = yield fetch(`https://graph.facebook.com/v19.0/me/messages?access_token=${page.accessToken}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -53,6 +60,8 @@ function handleWebhook(req, res) {
                             message: { text: reply }
                         })
                     });
+                    const fbJson = yield fbRes.json();
+                    console.log('📬 Facebook Response:', fbJson);
                 }
                 // ✅ Handle comment replies (from feed changes)
                 if (entry.changes) {
@@ -63,18 +72,21 @@ function handleWebhook(req, res) {
                             const commenterId = (_c = value.from) === null || _c === void 0 ? void 0 : _c.id;
                             const commentId = value.comment_id;
                             console.log('📝 New comment:', commentMessage);
+                            console.log('💬 From user:', commenterId);
                             const triggerWords = ['medeelel', 'une', 'awii', 'info'];
                             const isInterested = triggerWords.some(word => commentMessage === null || commentMessage === void 0 ? void 0 : commentMessage.toLowerCase().includes(word));
-                            if (!isInterested || !commentMessage || !commenterId)
+                            if (!isInterested || !commentMessage || !commenterId) {
+                                console.log('🚫 Ignored comment');
                                 continue;
+                            }
                             const page = yield PageSettings_1.default.findOne({ pageId });
                             if (!page || !page.accessToken) {
                                 console.warn(`⚠️ Page not found or missing token: ${pageId}`);
                                 continue;
                             }
                             const reply = yield (0, aiService_1.getReply)(commentMessage, pageId);
-                            // ✅ Use fetch for private reply to comment
-                            yield fetch(`https://graph.facebook.com/v19.0/${commentId}/private_replies?access_token=${page.accessToken}`, {
+                            console.log('🤖 Reply to comment:', reply);
+                            const commentRes = yield fetch(`https://graph.facebook.com/v19.0/${commentId}/private_replies?access_token=${page.accessToken}`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json'
@@ -83,7 +95,8 @@ function handleWebhook(req, res) {
                                     message: reply
                                 })
                             });
-                            console.log(`📩 Auto-DM sent to commenter: ${commenterId}`);
+                            const commentJson = yield commentRes.json();
+                            console.log('📩 Comment Reply Response:', commentJson);
                         }
                     }
                 }
