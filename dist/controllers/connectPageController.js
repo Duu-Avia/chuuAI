@@ -33,7 +33,22 @@ function connectPage(req, res) {
                 name: pageName,
             }, { upsert: true, new: true });
             console.log("✅ Page saved or updated in DB:", savedPage);
-            return res.status(200).json({ message: "✅ Page connected successfully" });
+            // ✅ Subscribe the page to webhook events
+            const response = yield fetch(`https://graph.facebook.com/v19.0/${pageId}/subscribed_apps?access_token=${accessToken}`, {
+                method: 'POST',
+            });
+            const result = yield response.json();
+            if (response.ok) {
+                console.log("✅ Page successfully subscribed to webhook events");
+                // ✅ Update flag in DB
+                yield PageSettings_1.default.updateOne({ pageId }, { webhookSubscribed: true });
+            }
+            else {
+                console.error("❌ Failed to subscribe page to webhook:", result);
+                // ✅ Optional: reset flag if failed
+                yield PageSettings_1.default.updateOne({ pageId }, { webhookSubscribed: false });
+            }
+            return res.status(200).json({ message: "✅ Page connected and subscription attempted" });
         }
         catch (error) {
             console.error("❌ connectPage error:", error);

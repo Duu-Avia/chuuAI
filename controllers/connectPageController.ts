@@ -28,7 +28,26 @@ export async function connectPage(req: Request, res: Response) {
 
     console.log("✅ Page saved or updated in DB:", savedPage);
 
-    return res.status(200).json({ message: "✅ Page connected successfully" });
+    // ✅ Subscribe the page to webhook events
+    const response = await fetch(`https://graph.facebook.com/v19.0/${pageId}/subscribed_apps?access_token=${accessToken}`, {
+      method: 'POST',
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      console.log("✅ Page successfully subscribed to webhook events");
+
+      // ✅ Update flag in DB
+      await PageSettings.updateOne({ pageId }, { webhookSubscribed: true });
+    } else {
+      console.error("❌ Failed to subscribe page to webhook:", result);
+
+      // ✅ Optional: reset flag if failed
+      await PageSettings.updateOne({ pageId }, { webhookSubscribed: false });
+    }
+
+    return res.status(200).json({ message: "✅ Page connected and subscription attempted" });
   } catch (error) {
     console.error("❌ connectPage error:", error);
     return res.status(500).json({ error: "Internal server error" });
