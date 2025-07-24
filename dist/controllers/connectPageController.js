@@ -18,11 +18,6 @@ function connectPage(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { pageId, accessToken, pageName } = req.body;
-            console.log("📥 Received connect-page request:", {
-                pageId,
-                accessToken,
-                pageName,
-            });
             if (!pageId || !accessToken || !pageName) {
                 console.warn("⚠️ Missing required fields");
                 return res.status(400).json({ error: "Missing required fields" });

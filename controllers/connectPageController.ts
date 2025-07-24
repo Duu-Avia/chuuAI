@@ -5,11 +5,6 @@ export async function connectPage(req: Request, res: Response) {
   try {
     const { pageId, accessToken, pageName } = req.body;
 
-    console.log("📥 Received connect-page request:", {
-      pageId,
-      accessToken,
-      pageName,
-    });
 
     if (!pageId || !accessToken || !pageName) {
       console.warn("⚠️ Missing required fields");
