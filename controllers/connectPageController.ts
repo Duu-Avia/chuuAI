@@ -5,9 +5,7 @@ export async function connectPage(req: Request, res: Response) {
   try {
     const { pageId, accessToken, pageName } = req.body;
 
-
     if (!pageId || !accessToken || !pageName) {
-      console.warn("⚠️ Missing required fields");
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -21,28 +19,24 @@ export async function connectPage(req: Request, res: Response) {
       { upsert: true, new: true }
     );
 
-    console.log("✅ Page saved or updated in DB:", savedPage);
+    console.log("✅ Page connected:", savedPage.name);
 
-    // ✅ Subscribe the page to webhook events
-    const response = await fetch(`https://graph.facebook.com/v19.0/${pageId}/subscribed_apps?subscribed_fields=feed&access_token=${accessToken}`, {
-      method: 'POST',
-    });
+    // Only subscribe to messages and postbacks
+    const response = await fetch(
+      `https://graph.facebook.com/v19.0/${pageId}/subscribed_apps?subscribed_fields=messages,messaging_postbacks&access_token=${accessToken}`,
+      { method: "POST" }
+    );
 
     const result = await response.json();
 
     if (response.ok) {
-      console.log("✅ Page successfully subscribed to webhook events");
-
-      // ✅ Update flag in DB
       await PageSettings.updateOne({ pageId }, { webhookSubscribed: true });
     } else {
-      console.error("❌ Failed to subscribe page to webhook:", result);
-
-      // ✅ Optional: reset flag if failed
+      console.error("❌ Webhook subscription failed:", result);
       await PageSettings.updateOne({ pageId }, { webhookSubscribed: false });
     }
 
-    return res.status(200).json({ message: "✅ Page connected and subscription attempted" });
+    return res.status(200).json({ message: "✅ Page connected" });
   } catch (error) {
     console.error("❌ connectPage error:", error);
     return res.status(500).json({ error: "Internal server error" });

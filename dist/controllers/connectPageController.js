@@ -19,7 +19,6 @@ function connectPage(req, res) {
         try {
             const { pageId, accessToken, pageName } = req.body;
             if (!pageId || !accessToken || !pageName) {
-                console.warn("⚠️ Missing required fields");
                 return res.status(400).json({ error: "Missing required fields" });
             }
             const savedPage = yield PageSettings_1.default.findOneAndUpdate({ pageId }, {
@@ -27,23 +26,18 @@ function connectPage(req, res) {
                 accessToken,
                 name: pageName,
             }, { upsert: true, new: true });
-            console.log("✅ Page saved or updated in DB:", savedPage);
-            // ✅ Subscribe the page to webhook events
-            const response = yield fetch(`https://graph.facebook.com/v19.0/${pageId}/subscribed_apps?subscribed_fields=feed&access_token=${accessToken}`, {
-                method: 'POST',
-            });
+            console.log("✅ Page connected:", savedPage.name);
+            // Only subscribe to messages and postbacks
+            const response = yield fetch(`https://graph.facebook.com/v19.0/${pageId}/subscribed_apps?subscribed_fields=messages,messaging_postbacks&access_token=${accessToken}`, { method: "POST" });
             const result = yield response.json();
             if (response.ok) {
-                console.log("✅ Page successfully subscribed to webhook events");
-                // ✅ Update flag in DB
                 yield PageSettings_1.default.updateOne({ pageId }, { webhookSubscribed: true });
             }
             else {
-                console.error("❌ Failed to subscribe page to webhook:", result);
-                // ✅ Optional: reset flag if failed
+                console.error("❌ Webhook subscription failed:", result);
                 yield PageSettings_1.default.updateOne({ pageId }, { webhookSubscribed: false });
             }
-            return res.status(200).json({ message: "✅ Page connected and subscription attempted" });
+            return res.status(200).json({ message: "✅ Page connected" });
         }
         catch (error) {
             console.error("❌ connectPage error:", error);

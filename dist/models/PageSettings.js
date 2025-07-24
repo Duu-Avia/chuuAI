@@ -10,9 +10,8 @@ const PageSettingsSchema = new mongoose_1.default.Schema({
     accessToken: { type: String, required: true },
     systemPrompt: {
         type: String,
-        default: "you are a helpful assistant for selling products on this page",
+        default: "you are a helpful assistant for selling products on this page also you only reply in Mongolian",
     },
-    webhookSubscribed: { type: Boolean, default: false }, // ✅ NEW
 });
 const PageSettings = mongoose_1.default.model('PageSettings', PageSettingsSchema);
 exports.default = PageSettings;

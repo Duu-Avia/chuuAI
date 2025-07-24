@@ -6,14 +6,10 @@ const PageSettingsSchema = new mongoose.Schema({
   accessToken: { type: String, required: true },
   systemPrompt: {
     type: String,
-    default: "you are a helpful assistant for selling products on this page",
+    default: "you are a helpful assistant for selling products on this page also you only reply in Mongolian",
   },
-  webhookSubscribed: { type: Boolean, default: false }, // ✅ NEW
+
 });
 
 const PageSettings = mongoose.model('PageSettings', PageSettingsSchema);
 export default PageSettings;
-
-
-
-
