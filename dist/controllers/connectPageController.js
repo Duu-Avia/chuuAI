@@ -34,7 +34,7 @@ function connectPage(req, res) {
             }, { upsert: true, new: true });
             console.log("✅ Page saved or updated in DB:", savedPage);
             // ✅ Subscribe the page to webhook events
-            const response = yield fetch(`https://graph.facebook.com/v19.0/${pageId}/subscribed_apps?access_token=${accessToken}`, {
+            const response = yield fetch(`https://graph.facebook.com/v19.0/${pageId}/subscribed_apps?subscribed_fields=feed&access_token=${accessToken}`, {
                 method: 'POST',
             });
             const result = yield response.json();

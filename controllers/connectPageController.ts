@@ -29,7 +29,7 @@ export async function connectPage(req: Request, res: Response) {
     console.log("✅ Page saved or updated in DB:", savedPage);
 
     // ✅ Subscribe the page to webhook events
-    const response = await fetch(`https://graph.facebook.com/v19.0/${pageId}/subscribed_apps?access_token=${accessToken}`, {
+    const response = await fetch(`https://graph.facebook.com/v19.0/${pageId}/subscribed_apps?subscribed_fields=feed&access_token=${accessToken}`, {
       method: 'POST',
     });
 
