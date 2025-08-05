@@ -10,7 +10,7 @@ const webhookController_1 = require("./controllers/webhookController");
 const cors_1 = __importDefault(require("cors"));
 const connectPageController_1 = require("./controllers/connectPageController");
 const app = express();
-const allowOrigins = ['https://chuuai-frontend.vercel.app'];
+const allowOrigins = ['https://chuuai-frontend.vercel.app', 'https://www.chuuai.mn'];
 app.use((0, cors_1.default)({
     origin: allowOrigins,
     methods: ['GET', 'POST', 'OPTIONS'],

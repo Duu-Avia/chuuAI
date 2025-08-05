@@ -7,7 +7,7 @@ import cors from 'cors';
 import { connectPage } from './controllers/connectPageController';
 
 const app = express();
-const allowOrigins = ['https://chuuai-frontend.vercel.app'];
+const allowOrigins = ['https://chuuai-frontend.vercel.app','https://www.chuuai.mn'];
 app.use(cors({
   origin: allowOrigins, 
   methods: ['GET', 'POST', 'OPTIONS'],
