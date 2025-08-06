@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import PageSettings from '../models/PageSettings';
 import { getReply } from '../services/aiService';
 import Message from '../models/Message';
+import { decrypt } from '../utils/encryption'; // 🛡 Import decrypt helper
 
 export async function handleWebhook(req: Request, res: Response) {
   try {
@@ -41,10 +42,12 @@ export async function handleWebhook(req: Request, res: Response) {
           continue;
         }
 
+        const decryptedToken = decrypt(page.accessToken); // 🔓 Decrypt access token
+
         const reply = await getReply(messageText, pageId);
         console.log('🤖 Generated Reply:', reply);
 
-        const fbRes = await fetch(`https://graph.facebook.com/v19.0/me/messages?access_token=${page.accessToken}`, {
+        const fbRes = await fetch(`https://graph.facebook.com/v19.0/me/messages?access_token=${decryptedToken}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -88,10 +91,12 @@ export async function handleWebhook(req: Request, res: Response) {
               continue;
             }
 
+            const decryptedToken = decrypt(page.accessToken); // 🔓 Decrypt access token
+
             const reply = await getReply(commentMessage, pageId);
             console.log('🤖 Reply to comment:', reply);
 
-            const commentRes = await fetch(`https://graph.facebook.com/v19.0/${commentId}/private_replies?access_token=${page.accessToken}`, {
+            const commentRes = await fetch(`https://graph.facebook.com/v19.0/${commentId}/private_replies?access_token=${decryptedToken}`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'

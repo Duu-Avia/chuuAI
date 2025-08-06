@@ -16,6 +16,7 @@ exports.handleWebhook = handleWebhook;
 const PageSettings_1 = __importDefault(require("../models/PageSettings"));
 const aiService_1 = require("../services/aiService");
 const Message_1 = __importDefault(require("../models/Message"));
+const encryption_1 = require("../utils/encryption"); // 🛡 Import decrypt helper
 function handleWebhook(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         var _a, _b, _c;
@@ -48,9 +49,10 @@ function handleWebhook(req, res) {
                         console.error(`⚠️ No PageSettings found for pageId: ${pageId}`);
                         continue;
                     }
+                    const decryptedToken = (0, encryption_1.decrypt)(page.accessToken); // 🔓 Decrypt access token
                     const reply = yield (0, aiService_1.getReply)(messageText, pageId);
                     console.log('🤖 Generated Reply:', reply);
-                    const fbRes = yield fetch(`https://graph.facebook.com/v19.0/me/messages?access_token=${page.accessToken}`, {
+                    const fbRes = yield fetch(`https://graph.facebook.com/v19.0/me/messages?access_token=${decryptedToken}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -84,9 +86,10 @@ function handleWebhook(req, res) {
                                 console.warn(`⚠️ Page not found or missing token: ${pageId}`);
                                 continue;
                             }
+                            const decryptedToken = (0, encryption_1.decrypt)(page.accessToken); // 🔓 Decrypt access token
                             const reply = yield (0, aiService_1.getReply)(commentMessage, pageId);
                             console.log('🤖 Reply to comment:', reply);
-                            const commentRes = yield fetch(`https://graph.facebook.com/v19.0/${commentId}/private_replies?access_token=${page.accessToken}`, {
+                            const commentRes = yield fetch(`https://graph.facebook.com/v19.0/${commentId}/private_replies?access_token=${decryptedToken}`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json'
