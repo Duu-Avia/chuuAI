@@ -61,9 +61,7 @@ export async function handleWebhook(req: Request, res: Response) {
         const fbJson = await fbRes.json();
         console.log('📬 Facebook Response:', fbJson);
       }
-    }
-
-    res.status(200).send('EVENT_RECEIVED');
+    } res.status(200).send('EVENT_RECEIVED');
   } catch (err) {
     console.error('❌ Webhook error:', err);
     res.sendStatus(500);
