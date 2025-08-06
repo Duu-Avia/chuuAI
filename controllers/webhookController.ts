@@ -19,7 +19,7 @@ export async function handleWebhook(req: Request, res: Response) {
       const pageId = entry.id;
       console.log('📄 Page ID:', pageId);
 
-      // ✅ Handle normal messages
+      //  Handle normal messages
       const messagingEvent = entry.messaging?.[0];
       if (messagingEvent?.message?.text) {
         const senderId = messagingEvent.sender.id;
@@ -60,56 +60,6 @@ export async function handleWebhook(req: Request, res: Response) {
 
         const fbJson = await fbRes.json();
         console.log('📬 Facebook Response:', fbJson);
-      }
-
-      // ✅ Handle comment replies (from feed changes)
-      if (entry.changes) {
-        for (const change of entry.changes) {
-          const value = change.value;
-
-          if (change.field === 'feed' && value.item === 'comment') {
-            const commentMessage = value.message;
-            const commenterId = value.from?.id;
-            const commentId = value.comment_id;
-
-            console.log('📝 New comment:', commentMessage);
-            console.log('💬 From user:', commenterId);
-
-            const triggerWords = ['medeelel', 'une', 'awii', 'info'];
-            const isInterested = triggerWords.some(word =>
-              commentMessage?.toLowerCase().includes(word)
-            );
-
-            if (!isInterested || !commentMessage || !commenterId) {
-              console.log('🚫 Ignored comment');
-              continue;
-            }
-
-            const page = await PageSettings.findOne({ pageId });
-            if (!page || !page.accessToken) {
-              console.warn(`⚠️ Page not found or missing token: ${pageId}`);
-              continue;
-            }
-
-            const decryptedToken = decrypt(page.accessToken); // 🔓 Decrypt access token
-
-            const reply = await getReply(commentMessage, pageId);
-            console.log('🤖 Reply to comment:', reply);
-
-            const commentRes = await fetch(`https://graph.facebook.com/v19.0/${commentId}/private_replies?access_token=${decryptedToken}`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                message: reply
-              })
-            });
-
-            const commentJson = await commentRes.json();
-            console.log('📩 Comment Reply Response:', commentJson);
-          }
-        }
       }
     }
 

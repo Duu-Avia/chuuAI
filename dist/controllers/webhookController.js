@@ -19,7 +19,7 @@ const Message_1 = __importDefault(require("../models/Message"));
 const encryption_1 = require("../utils/encryption"); // 🛡 Import decrypt helper
 function handleWebhook(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        var _a, _b, _c;
+        var _a, _b;
         try {
             const body = req.body;
             console.log('📥 Webhook received:', JSON.stringify(body, null, 2));
@@ -30,7 +30,7 @@ function handleWebhook(req, res) {
             for (const entry of body.entry) {
                 const pageId = entry.id;
                 console.log('📄 Page ID:', pageId);
-                // ✅ Handle normal messages
+                //  Handle normal messages
                 const messagingEvent = (_a = entry.messaging) === null || _a === void 0 ? void 0 : _a[0];
                 if ((_b = messagingEvent === null || messagingEvent === void 0 ? void 0 : messagingEvent.message) === null || _b === void 0 ? void 0 : _b.text) {
                     const senderId = messagingEvent.sender.id;
@@ -64,44 +64,6 @@ function handleWebhook(req, res) {
                     });
                     const fbJson = yield fbRes.json();
                     console.log('📬 Facebook Response:', fbJson);
-                }
-                // ✅ Handle comment replies (from feed changes)
-                if (entry.changes) {
-                    for (const change of entry.changes) {
-                        const value = change.value;
-                        if (change.field === 'feed' && value.item === 'comment') {
-                            const commentMessage = value.message;
-                            const commenterId = (_c = value.from) === null || _c === void 0 ? void 0 : _c.id;
-                            const commentId = value.comment_id;
-                            console.log('📝 New comment:', commentMessage);
-                            console.log('💬 From user:', commenterId);
-                            const triggerWords = ['medeelel', 'une', 'awii', 'info'];
-                            const isInterested = triggerWords.some(word => commentMessage === null || commentMessage === void 0 ? void 0 : commentMessage.toLowerCase().includes(word));
-                            if (!isInterested || !commentMessage || !commenterId) {
-                                console.log('🚫 Ignored comment');
-                                continue;
-                            }
-                            const page = yield PageSettings_1.default.findOne({ pageId });
-                            if (!page || !page.accessToken) {
-                                console.warn(`⚠️ Page not found or missing token: ${pageId}`);
-                                continue;
-                            }
-                            const decryptedToken = (0, encryption_1.decrypt)(page.accessToken); // 🔓 Decrypt access token
-                            const reply = yield (0, aiService_1.getReply)(commentMessage, pageId);
-                            console.log('🤖 Reply to comment:', reply);
-                            const commentRes = yield fetch(`https://graph.facebook.com/v19.0/${commentId}/private_replies?access_token=${decryptedToken}`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    message: reply
-                                })
-                            });
-                            const commentJson = yield commentRes.json();
-                            console.log('📩 Comment Reply Response:', commentJson);
-                        }
-                    }
                 }
             }
             res.status(200).send('EVENT_RECEIVED');
