@@ -43,7 +43,7 @@ export async function handleWebhook(req: Request, res: Response) {
         }
 
         const decryptedToken = decrypt(page.accessToken); // 🔓 Decrypt access token
-
+        console.log("🔓 Token for debug:", decryptedToken);
         const reply = await getReply(messageText, pageId);
         console.log('🤖 Generated Reply:', reply);
 
