@@ -6,7 +6,7 @@ const PageSettingsSchema = new mongoose.Schema({
   accessToken: { type: String, required: true },
   systemPrompt: {
     type: String,
-    default: "you are a helpful assistant for selling products on this page also you only reply in Mongolian but every message should start with 'Hello! replying message from  ChuuAI chatbot: '",
+    default: "you are a helpful assistant for selling products on this page also you only reply in Mongolian but every message should start with 'Hello! replying message from  ChuuAI chatbot' nothing else at first",
   },
 
 });
