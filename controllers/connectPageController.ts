@@ -13,11 +13,6 @@ export async function connectPage(req: Request, res: Response) {
 
 const encryptedToken = encrypt(accessToken); // 🔐 Encrypt once
 
-console.log("🧪 Received raw token:", accessToken);
-console.log("🔐 Encrypted token (preview):", encryptedToken.slice(0, 30)); // Use the same one
-
-
-
     const savedPage = await PageSettings.findOneAndUpdate(
       { pageId },
       {

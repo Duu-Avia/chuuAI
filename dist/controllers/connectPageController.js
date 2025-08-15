@@ -24,8 +24,6 @@ function connectPage(req, res) {
                 return res.status(400).json({ error: "Missing required fields" });
             }
             const encryptedToken = (0, encryption_1.encrypt)(accessToken); // 🔐 Encrypt once
-            console.log("🧪 Received raw token:", accessToken);
-            console.log("🔐 Encrypted token (preview):", encryptedToken.slice(0, 30)); // Use the same one
             const savedPage = yield PageSettings_1.default.findOneAndUpdate({ pageId }, {
                 pageId,
                 accessToken: encryptedToken, // 🔐 Save encrypted
