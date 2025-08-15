@@ -10,6 +10,7 @@ const cors_1 = __importDefault(require("cors"));
 const webhookController_1 = require("./controllers/webhookController");
 const connectPageController_1 = require("./controllers/connectPageController");
 const exchangeTokenController_1 = require("./controllers/exchangeTokenController");
+const sendMessageController_1 = require("./controllers/sendMessageController");
 const app = (0, express_1.default)();
 // ✅ CORS Setup
 const allowOrigins = [
@@ -44,6 +45,7 @@ app.get("/webhook", (req, res) => {
 app.post("/webhook", webhookController_1.handleWebhook);
 app.get("/api/exchange-token", exchangeTokenController_1.exchangeToken);
 app.post("/api/connect-page", connectPageController_1.connectPage);
+app.post("/api/send-message", sendMessageController_1.sendMessage);
 // ✅ Required Meta App Review Pages
 app.get("/privacy-policy", (req, res) => {
     res.send(`

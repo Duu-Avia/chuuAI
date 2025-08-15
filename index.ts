@@ -5,6 +5,7 @@ import cors from "cors";
 import { handleWebhook } from "./controllers/webhookController";
 import { connectPage } from "./controllers/connectPageController";
 import { exchangeToken } from "./controllers/exchangeTokenController";
+import { sendMessage } from "./controllers/sendMessageController";
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.get("/webhook", (req: Request, res: Response) => {
 app.post("/webhook", handleWebhook);
 app.get("/api/exchange-token", exchangeToken);
 app.post("/api/connect-page", connectPage);
+app.post("/api/send-message", sendMessage)
 
 // ✅ Required Meta App Review Pages
 app.get("/privacy-policy", (req: Request, res: Response) => {
