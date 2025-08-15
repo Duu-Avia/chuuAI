@@ -10,7 +10,7 @@ const PageSettingsSchema = new mongoose_1.default.Schema({
     accessToken: { type: String, required: true },
     systemPrompt: {
         type: String,
-        default: "you are a helpful assistant for selling products on this page also you only reply in Mongolian",
+        default: "you are a helpful assistant for selling products on this page also you only reply in Mongolian but every message should start with 'Hello! replying message from  ChuuAI chatbot: '",
     },
 });
 const PageSettings = mongoose_1.default.model('PageSettings', PageSettingsSchema);
