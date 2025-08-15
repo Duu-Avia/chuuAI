@@ -50,7 +50,6 @@ function handleWebhook(req, res) {
                         continue;
                     }
                     const decryptedToken = (0, encryption_1.decrypt)(page.accessToken); // 🔓 Decrypt access token
-                    console.log("🔓 Token for debug:", decryptedToken);
                     const reply = yield (0, aiService_1.getReply)(messageText, pageId);
                     console.log('🤖 Generated Reply:', reply);
                     const fbRes = yield fetch(`https://graph.facebook.com/v19.0/me/messages?access_token=${decryptedToken}`, {
