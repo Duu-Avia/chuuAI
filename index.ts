@@ -6,6 +6,10 @@ import { handleWebhook } from "./controllers/webhookController";
 import { connectPage } from "./controllers/connectPageController";
 import { exchangeToken } from "./controllers/exchangeTokenController";
 import { sendMessage } from "./controllers/sendMessageController";
+import { requirePageAccess } from "./middleware/requirePageAccess";
+import productsRouter from './routes/products';
+import { clerkMiddleware } from "@clerk/express";
+import { verifyMetaSignature } from "./middleware/verifyMetaSignature";
 
 const app = express();
 
@@ -13,15 +17,20 @@ const app = express();
 const allowOrigins = [
   "https://chuuai-frontend.vercel.app",
   "https://www.chuuai.mn",
+  "http://localhost:3000",
 ];
 app.use(
   cors({
     origin: allowOrigins,
-    methods: ["GET", "POST", "OPTIONS"],
+    methods: ["GET", "POST", "OPTIONS", "PUT", "DELETE", "PATCH"],
     credentials: true,
   })
 );
-app.use(express.json());
+app.use(express.json({
+  verify: (req: any, _res, buf) => { req.rawBody = buf; } // <-- store raw body for HMAC
+}));
+app.use(clerkMiddleware());
+
 
 // ✅ MongoDB Connect
 mongoose
@@ -44,10 +53,11 @@ app.get("/webhook", (req: Request, res: Response) => {
 });
 
 // ✅ Webhook + Token Exchange + Page Connect Routes
-app.post("/webhook", handleWebhook);
+app.post("/webhook", verifyMetaSignature, handleWebhook);
 app.get("/api/exchange-token", exchangeToken);
 app.post("/api/connect-page", connectPage);
 app.post("/api/send-message", sendMessage)
+app.use("/api/products", requirePageAccess, productsRouter)
 
 // ✅ Required Meta App Review Pages
 app.get("/privacy-policy", (req: Request, res: Response) => {
@@ -72,5 +82,5 @@ app.get("/delete-data", (req: Request, res: Response) => {
 });
 
 // ✅ Start Server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4200;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

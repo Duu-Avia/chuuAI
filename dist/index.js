@@ -11,18 +11,26 @@ const webhookController_1 = require("./controllers/webhookController");
 const connectPageController_1 = require("./controllers/connectPageController");
 const exchangeTokenController_1 = require("./controllers/exchangeTokenController");
 const sendMessageController_1 = require("./controllers/sendMessageController");
+const requirePageAccess_1 = require("./middleware/requirePageAccess");
+const products_1 = __importDefault(require("./routes/products"));
+const express_2 = require("@clerk/express");
+const verifyMetaSignature_1 = require("./middleware/verifyMetaSignature");
 const app = (0, express_1.default)();
 // ✅ CORS Setup
 const allowOrigins = [
     "https://chuuai-frontend.vercel.app",
     "https://www.chuuai.mn",
+    "http://localhost:3000",
 ];
 app.use((0, cors_1.default)({
     origin: allowOrigins,
-    methods: ["GET", "POST", "OPTIONS"],
+    methods: ["GET", "POST", "OPTIONS", "PUT", "DELETE", "PATCH"],
     credentials: true,
 }));
-app.use(express_1.default.json());
+app.use(express_1.default.json({
+    verify: (req, _res, buf) => { req.rawBody = buf; } // <-- store raw body for HMAC
+}));
+app.use((0, express_2.clerkMiddleware)());
 // ✅ MongoDB Connect
 mongoose_1.default
     .connect(process.env.MONGO_URI)
@@ -42,10 +50,11 @@ app.get("/webhook", (req, res) => {
     }
 });
 // ✅ Webhook + Token Exchange + Page Connect Routes
-app.post("/webhook", webhookController_1.handleWebhook);
+app.post("/webhook", verifyMetaSignature_1.verifyMetaSignature, webhookController_1.handleWebhook);
 app.get("/api/exchange-token", exchangeTokenController_1.exchangeToken);
 app.post("/api/connect-page", connectPageController_1.connectPage);
 app.post("/api/send-message", sendMessageController_1.sendMessage);
+app.use("/api/products", requirePageAccess_1.requirePageAccess, products_1.default);
 // ✅ Required Meta App Review Pages
 app.get("/privacy-policy", (req, res) => {
     res.send(`
@@ -66,5 +75,5 @@ app.get("/delete-data", (req, res) => {
   `);
 });
 // ✅ Start Server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4200;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
