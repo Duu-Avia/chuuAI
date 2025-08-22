@@ -1,4 +1,3 @@
-// models/PageSettings.ts
 import mongoose from 'mongoose';
 
 const PageSettingsSchema = new mongoose.Schema({
