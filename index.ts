@@ -10,6 +10,7 @@ import { requirePageAccess } from "./middleware/requirePageAccess";
 import productsRouter from './routes/products';
 import { clerkMiddleware } from "@clerk/express";
 import { verifyMetaSignature } from "./middleware/verifyMetaSignature";
+import planRouter from "./routes/plan";
 
 const app = express();
 
@@ -58,6 +59,7 @@ app.get("/api/exchange-token", exchangeToken);
 app.post("/api/connect-page", connectPage);
 app.post("/api/send-message", sendMessage)
 app.use("/api/products", requirePageAccess, productsRouter)
+app.use("/api/plan", planRouter);
 
 // ✅ Required Meta App Review Pages
 app.get("/privacy-policy", (req: Request, res: Response) => {
