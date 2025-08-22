@@ -8,19 +8,34 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+// routes/subscription.ts
 const express_1 = require("express");
 const requirePageAccess_1 = require("../middleware/requirePageAccess");
-const subscription_1 = require("../services/subscription");
+const PageSettings_1 = __importDefault(require("../models/PageSettings"));
+function addMonthsClamped(date, months) {
+    const d = new Date(date);
+    const day = d.getDate();
+    d.setDate(1);
+    d.setMonth(d.getMonth() + months);
+    const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    d.setDate(Math.min(day, lastDay));
+    return d;
+}
 const router = (0, express_1.Router)();
 router.post("/renew", requirePageAccess_1.requirePageAccess, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const pageId = req.pageId;
-        const endsAt = yield (0, subscription_1.startOrRenewSubscription)(pageId, 1);
-        res.json({ ok: true, subscriptionEndsAt: endsAt.toISOString() });
-    }
-    catch (e) {
-        res.status(500).json({ error: e.message || "Renew failed" });
-    }
+    const pageId = req.pageId;
+    const page = yield PageSettings_1.default.findOne({ pageId });
+    if (!page)
+        return res.status(404).json({ error: "Page not found" });
+    const base = page.subscriptionEndsAt && page.subscriptionEndsAt > new Date()
+        ? page.subscriptionEndsAt
+        : new Date();
+    page.subscriptionEndsAt = addMonthsClamped(base, 1);
+    yield page.save();
+    res.json({ ok: true, subscriptionEndsAt: page.subscriptionEndsAt.toISOString() });
 }));
 exports.default = router;
