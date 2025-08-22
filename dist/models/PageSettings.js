@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+// models/PageSettings.ts
 const mongoose_1 = __importDefault(require("mongoose"));
 const PageSettingsSchema = new mongoose_1.default.Schema({
     pageId: { type: String, required: true, unique: true, index: true },
@@ -12,17 +13,13 @@ const PageSettingsSchema = new mongoose_1.default.Schema({
         type: String,
         default: "you are a helpful assistant for selling products on this page every message should start with 'Hello! replying message from  ChuuAI chatbot'",
     },
-    isSubscriber: { type: Boolean, default: false },
+    plan: { type: String, enum: ["starter", "pro", "enterprise"], default: "starter", index: true },
     ownerUserId: { type: String, index: true },
-    plan: {
-        type: String,
-        enum: ["starter", "pro", "enterprise"],
-        default: "starter",
-        index: true,
-    },
+    // ⬇️ move here
+    subscriptionEndsAt: { type: Date, default: null },
     overrides: {
         messagesPerMonth: { type: Number },
         extraInstagramPages: { type: Number },
-    }
+    },
 }, { timestamps: true });
 exports.default = mongoose_1.default.model('PageSettings', PageSettingsSchema);

@@ -16,6 +16,8 @@ const products_1 = __importDefault(require("./routes/products"));
 const express_2 = require("@clerk/express");
 const verifyMetaSignature_1 = require("./middleware/verifyMetaSignature");
 const plan_1 = __importDefault(require("./routes/plan"));
+const subscription_1 = __importDefault(require("./routes/subscription"));
+const requireActiveSubscription_1 = require("./middleware/requireActiveSubscription");
 const app = (0, express_1.default)();
 // ✅ CORS Setup
 const allowOrigins = [
@@ -55,8 +57,9 @@ app.post("/webhook", verifyMetaSignature_1.verifyMetaSignature, webhookControlle
 app.get("/api/exchange-token", exchangeTokenController_1.exchangeToken);
 app.post("/api/connect-page", connectPageController_1.connectPage);
 app.post("/api/send-message", sendMessageController_1.sendMessage);
-app.use("/api/products", requirePageAccess_1.requirePageAccess, products_1.default);
+app.use("/api/products", requirePageAccess_1.requirePageAccess, requireActiveSubscription_1.requireActiveSubscription, products_1.default);
 app.use("/api/plan", plan_1.default);
+app.use("/api/subscription", subscription_1.default);
 // ✅ Required Meta App Review Pages
 app.get("/privacy-policy", (req, res) => {
     res.send(`

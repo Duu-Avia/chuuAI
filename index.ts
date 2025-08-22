@@ -11,7 +11,8 @@ import productsRouter from './routes/products';
 import { clerkMiddleware } from "@clerk/express";
 import { verifyMetaSignature } from "./middleware/verifyMetaSignature";
 import planRouter from "./routes/plan";
-
+import subscriptionRouter from "./routes/subscription";
+import { requireActiveSubscription } from "./middleware/requireActiveSubscription";
 const app = express();
 
 // ✅ CORS Setup
@@ -58,8 +59,10 @@ app.post("/webhook", verifyMetaSignature, handleWebhook);
 app.get("/api/exchange-token", exchangeToken);
 app.post("/api/connect-page", connectPage);
 app.post("/api/send-message", sendMessage)
-app.use("/api/products", requirePageAccess, productsRouter)
+app.use("/api/products", requirePageAccess, requireActiveSubscription, productsRouter)
 app.use("/api/plan", planRouter);
+app.use("/api/subscription", subscriptionRouter);
+
 
 // ✅ Required Meta App Review Pages
 app.get("/privacy-policy", (req: Request, res: Response) => {
