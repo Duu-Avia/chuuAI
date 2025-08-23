@@ -2,13 +2,12 @@
 import { Router } from "express";
 import PageSettings from "../models/PageSettings";
 import Usage from "../models/Usage";
-import { getCaps, type Plan } from "../services/planCaps"; // <- case sensitive
+import { getCaps, type Plan } from "../services/planCaps";
 import { monthKey } from "../services/usage";
 import { requirePageAccess } from "../middleware/requirePageAccess";
 
 const router = Router();
 
-// helper to coerce nullables into the shape getCaps expects
 function normalizeOverrides(
   o: { messagesPerMonth?: number | null; extraInstagramPages?: number | null } | null | undefined
 ):
@@ -31,11 +30,41 @@ router.get("/", requirePageAccess, async (req, res) => {
   const caps = getCaps(plan, normalizeOverrides((page as any).overrides));
 
   const usage = await Usage.findOne({ pageId, month: monthKey() }).lean();
+  const messagesUsed = usage?.messages ?? 0;
 
-  res.json({
-    plan: page.plan,
+  const limit =
+    caps.quotas.messagesPerMonth === "unlimited"
+      ? Infinity
+      : Number(caps.quotas.messagesPerMonth ?? 0);
+
+  const limitExceeded = Number.isFinite(limit) && messagesUsed >= limit;
+
+  // ---- compute subscription status once
+  const rawEnds = (page as any).subscriptionEndsAt ?? null;
+  const endsAt = rawEnds ? new Date(rawEnds) : null;
+  const now = new Date();
+  const subscriptionActive = !endsAt || endsAt > now;
+
+  // 🔎 debug
+  console.log("[/api/plan]", {
+    pageId,
+    plan,
+    rawEnds,
+    endsAtISO: endsAt ? endsAt.toISOString() : null,
+    nowISO: now.toISOString(),
+    subscriptionActive,
+    messagesUsed,
+    limit,
+    limitExceeded,
+  });
+
+  return res.json({
+    plan,
     caps,
-    usage: { month: monthKey(), messages: usage?.messages || 0 },
+    usage: { month: monthKey(), messages: messagesUsed },
+    subscriptionActive,
+    subscriptionEndsAt: endsAt ? endsAt.toISOString() : null,
+    limitExceeded,
   });
 });
 
